@@ -1,4 +1,4 @@
-# ipython
+#! /usr/bin/ipython
 import numpy as np
 import ke
 from gplot import *
@@ -14,11 +14,14 @@ e = 1.0
 E = np.arange(-10,6,0.001)
 E = np.arange(0,3,0.001); M = ke.M(E, e)
 
-gplot(M, E, ke._E_newton(M, e), ke.E(M, e, n=55, typ='atr'), ' us 1:3, "" us 1:4')
-gplot('"" us 1:($3-$2), "" us 1:($4-$2)')
-gplot(M, np.log10(np.abs(ke._E(M, e, n=55)-E)))
+if 0:
+   gplot(M, E, ke._E_newton(M, e), ke.E(M, e, n=55, typ='atr'), ' us 1:3, "" us 1:4')
+   gplot('"" us 1:($3-$2), "" us 1:($4-$2)')
+   gplot(M, np.log10(np.abs(ke._E(M, e, n=55)-E)))
 
-pause()
+   pause()
+
+
 M = np.arange(0, np.pi, np.pi/1000);
 
 timeit ke._E(M, e, n=29)
