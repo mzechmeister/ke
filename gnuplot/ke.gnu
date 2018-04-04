@@ -41,7 +41,20 @@ _Epn(M,e,N) = (E=floor(M/(2*pi)+0.5)*2*pi, cosE=1, sinE=0, sum [_n=1:N] (E=E+(sg
 _E(M,e,N) = (E=floor(M/(2*pi)+0.5)*2*pi, z={1,0}, sum [_n=1:N] (sgn=(E-e*imag(z)>M?-1:1), z=z*cosa(_n)+ {0,1}*sgn*sina(_n), E=E+sgn*a(_n)), E)
 
 # onesided, half angle (only positive shift)
-_E(M,e,N) = (E=floor(M/(2*pi)+0.5)*2*pi, cosE=1, sinE=0, sgn=M>E?1:-1, E=E*sgn, m=M*sgn, sum [_n=1:N] (st=cosE*sina(_n)+sinE*cosa(_n), Et=E+a(_n), (Et-e*st<m)?(cosE=(cosE*cosa(_n)-sinE*sina(_n)),sinE=st,E=Et):0), sinE=sgn*sinE, E*sgn)
+_E(M,e,N) = (E = floor(M/(2*pi)+0.5)*2*pi,\
+             cosE = 1,\
+             sinE = 0,\
+             sgn = M>E?1:-1,\
+             E = E*sgn,\
+             m = M*sgn,\
+             sum [_n=1:N] (\
+                st = cosE*sina(_n)+sinE*cosa(_n),\
+                Et = E+a(_n),\
+                (Et-e*st<m) ? (cosE=(cosE*cosa(_n)-sinE*sina(_n)),sinE=st,E=Et):0\
+             ),\
+             sinE = sgn*sinE,\
+             E*sgn\
+            )
 
 # twosided, arctangent radix (atr version)
 _Eatr(M,e,N) = (E=floor(M/(2*pi)+0.5)*2*pi, cosE=0, sinE=M>E?1:-1, E=E+pi/2*sinE, sum [_n=0:N-1] (sgn=(E-e*K(_n+1)*sinE>M)?-1:1, cosE=(ct=cosE)-sinE/(sgn<<_n), sinE=sinE+ct/(sgn<<_n), E=E+sgn*atr(_n)), cosE=K(n)*cosE, sinE=K(_n)*sinE, E)
