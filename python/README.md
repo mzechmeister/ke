@@ -1,5 +1,5 @@
 
-This python version is vectorised and uses numpy-ctypes to wrap a C implementation.
+The python module ke.py is vectorised and uses numpy-ctypes to wrap a C implementation.
 
 Example:
 
@@ -9,3 +9,5 @@ Example:
 >>> ke._E(M, 1.)
 array([1.99999818, 2.55419595, 3.12079558, 3.57764002])
 ```
+
+The python module ke_cordic.py hosts the demonstration codes from the paper.
