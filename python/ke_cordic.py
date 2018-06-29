@@ -87,36 +87,36 @@ if __name__ == "__main__":
 
    Without arguments the examples are checked with doctest:
    ~> ./ke_cordic.py
+   No output if successful.
 
-   With two arguments (mean anomaly and eccentricity) the eccentric:
+   With two arguments (mean anomaly and eccentricity) the eccentric and hyperbolic
+   anomaly are returned:
    ~> ./ke_cordic.py 1.07 1.
    (1.9853116307811327, -0.4027463298095706, 0.915311637544788)
    (1.7649039106648186, 3.006107154374343, 2.834903917874572)
 
-   With one arguments a graphic representation is plotted.
+   With one argument a graphic representation is plotted.
    '''
    import sys
-   if len(sys.argv)>2:
-      args = map(float, sys.argv[1:])
+   args = map(float, sys.argv[1:])
+   if not args:
+      import doctest
+      doctest.testmod()
+   elif len(args) == 1:
+      from gplot import Gplot
+      gplot = Gplot("-p")
+      e = 1.0
+      E = [i/1000. for i in range(-10000, 10000)]
+      M = [t - e*sin(t)  for t in E]
+      En = [Ecs(m, e)[0] for m in M]
+      H = E[5000:-5000]
+      Mh = [e*sinh(t) - t for t in H]
+      H0 = [Hcs(m, e, n=0)[0] for m in Mh]
+      Hn = [Hcs(m, e)[0] for m in Mh]
+      gplot(M, E, En, 'w l, "" us 1:3,', Mh,
+            H, Hn, H0, ' w l t "H", "" us 1:3 t "Hn", "" us 1:4 t "H0', tmp="$")
+   else:
       if args[1] <= 1:
          print(Ecs(*args))
       if args[1] >= 1:
          print(Hcs(*args))
-   elif len(sys.argv)==1:
-      import doctest
-      doctest.testmod()
-      exec(doctest.script_from_examples(Ecs.__doc__))
-      exec(doctest.script_from_examples(Hcs.__doc__))
-   else:
-      from gplot import *
-      E = [i/1000. for i in range(-10000, 10000)]
-      M = [t - sin(t)  for t in E]
-      En = [Ecs(m, 1.)[0] for m in M]
-      #gplot(M, E, En, 'w l, "" us 1:($3)')
-      H = [i/1000. for i in range(-10000, 10000)]
-      Mh = [sinh(h) - h for h in H]
-      H0 = [Hcs(m, 1., n=0)[0] for m in Mh]
-      Hn = [Hcs(m, 1.)[0] for m in Mh]
-      gplot(M, E, En, 'w l, "" us 1:3,', Mh, H, Hn, H0, ' w l, "" us 1:3, "" us 1:4')
-      #example()
-
