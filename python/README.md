@@ -1,3 +1,4 @@
+## CORDIC-like algorithm for KE in python
 
 The python module [ke.py](ke.py) is vectorised and uses numpy-ctypes to wrap a C implementation.
 
