@@ -1,7 +1,6 @@
 # ke - Solving Kepler's equation with CORDIC
 
 [![arXiv](http://img.shields.io/badge/arXiv-1808.07062-green.svg?style=flat)](https://arxiv.org/abs/1808.07062)
-[![Downloads](https://img.shields.io/github/downloads/mzechmeister/ke/total.svg)](https://github.com/mzechmeister/ke/)
 [![HitCount](http://hits.dwyl.io/mzechmeister/ke.svg?style=flat)](http://hits.dwyl.io/mzechmeister/ke)
 
 Based on the algorithm published in:\
