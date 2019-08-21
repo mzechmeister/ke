@@ -11,4 +11,18 @@ Example:
 array([1.99999818, 2.55419595, 3.12079558, 3.57764002])
 ```
 
-The python module [ke_cordic.py](ke_cordic.py) hosts the demonstration codes from the paper.
+The python module [ke_cordic.py](ke_cordic.py) hosts the demonstration codes from the paper and is standalone.
+
+
+### Installation python
+```bash
+svn export https://github.com/mzechmeister/ke/trunk/python ke_cordic_like
+cd ke_cordic_like
+python setup.py develop --user
+```
+
+### Deinstallation
+
+```bash
+python setup.py develop -u --user
+```
