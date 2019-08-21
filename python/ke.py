@@ -5,9 +5,12 @@ import ctypes
 
 ptr_double = np.ctypeslib.ndpointer(dtype=np.float)
 
-_ke = np.ctypeslib.load_library('lib/ke', '.')
+import os
+libdir = os.path.dirname(os.path.abspath(__file__)) + os.sep + 'lib' + os.sep
+
+_ke = np.ctypeslib.load_library(libdir+'ke', '.')
 "%x"%ctypes.addressof(_ke._E)
-_ke_newton = np.ctypeslib.load_library('lib/ke_newton', '.')
+_ke_newton = np.ctypeslib.load_library(libdir+'ke_newton', '.')
 
 # https://hakantiftikci.wordpress.com/2009/11/15/an-exampe-for-callbacks-in-ctypes/
 # M = [3.1, 1, 3, 4,5]; E = ke._E(M, 1.)
