@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CORDIC</title>
+<link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet' type='text/css'>
+</head>
+<body>
+
+<style>
+input:read-only {
+    background-color: #ccc;
+}
+input:-moz-read-only {
+    background-color: #ccc;
+}
+
+input[type=button] {
+    width:100%;
+    border-radius: 5px;
+}
+
+.active, .btn:hover {
+    background-color: #6CF;
+}
+
+@-moz-document url-prefix() {
+    .active, .btn:hover {
+        border-width: 3px; // otherwise the button slightly resizes in the cells
+    }
+}
+
+#cordic_table td {
+    padding: 0 .5em 0 0.5em;
+}
+
+/* Rule to fix quirks-mode inheritance behavior
+table, caption {
+    font-size: inherit;
+    font-weight: inherit;
+    font-style: inherit;
+    font-variant: inherit;
+}*/
+</style>
+
+
+<script>
+
+function atab(N, mu) {
+    // setup sequence and angles
+    nseq = [...Array(N).keys()]
+    var a
+    if (mu == 0) {
+        a = x => x
+    } else if (mu == 1) {
+        a = Math.atan
+    } else if (mu == -1) {
+        nseq = nseq.slice(1).concat([4,13]).sort((x,y) => x-y)
+        a = Math.atanh
+    }
+    naseq = nseq.map(n => { return [n, a(1./(1<<n))] })
+}
+
+
+function K(N, mu) {
+    // scale correction factor
+    var k=1.
+    for ([n,_] of naseq.slice(0,N)) { k *= Math.sqrt(1 + mu/(1<<n)/(1<<n)); }
+    return 1/k
+}
+
+function cordic(x, y, z, mu, naseq, K, cond) {
+    var n, dx, dy, s, L=[['', x, y, z, 0]]
+    for ([n,a] of naseq) {
+        s = cond(x,y,z) ? 1 : -1;
+        [dx, dy] = [y, x]      // swap
+        x += mu * s * dx / (1<<n)
+        y -= s * dy / (1<<n)
+        z += s * a
+        L.push([n, x, y, z, s])
+    }
+    return [[K*x, K*y, z], L]
+}
+
+function cordic_fmt(x, y, z, mu, naseq, K, cond) {
+    var n, s, chain, X, Y, Z
+    
+    [[X, Y, Z], chain] = cordic(x, y, z, mu, naseq, K, cond)
+
+    // output the chain to the table
+    g = document.getElementsByClassName('niter')
+    while (g.length) g[0].remove()
+    t = document.getElementById('iter');
+    for ([n, x, y, z, s] of chain) {
+        var newRow = document.createElement("TR");
+        newRow.className = "niter";
+        for (i of [s, fmt(z), fmt(y), fmt(x), n]) {
+            var newCell = newRow.insertCell(0);
+            newCell.appendChild(document.createTextNode(i));
+            newCell.align = "right";
+        }
+        t.parentNode.insertBefore(newRow, t)
+    };
+    document.getElementById('X').value = fmt(X)
+    document.getElementById('Y').value = fmt(Y)
+    document.getElementById('Z').value = fmt(Z)
+    document.getElementById('ZZ').value = fmt(2*Z)
+    conv_range()
+}
+
+function fmt(x) {
+    return (x<0? "" : "\u00A0") + x.toFixed(10)
+}
+
+function conv_range(){
+    rng = 0
+    for ([n,a] of naseq) {rng = rng + a}
+    invrng = 1 / rng
+    if (mu == 0) {
+        invrng = 1 / rng
+    } else if (mu == 1) {
+        // invrng = Math.tan(rng)
+        invrng = Infinity   // because the convergence is over (more than) one circle
+    } else if (mu == -1) {
+        nseq = nseq.slice(1).concat([4,13]).sort((x,y) => x-y)
+        invrng = Math.tanh(rng)
+    }
+ 
+    rot = mode == "r" 
+    fx.title = rot ? "" : 'x  > y * ' + invrng
+    fy.title = rot ? "" : 'y  < x * ' + rng
+    fz.title = rot ? '|z| < ' + rng : ""
+    fx.style.color = !rot & (Math.abs(fx.value) < Math.abs(fy.value)/rng) ? "red" : ""
+    fy.style.color = !rot & (Math.abs(fy.value) > rng * Math.abs(fx.value)) ? "red" : ""
+    fz.style.color = rot & (Math.abs(fz.value) > rng) ? "red" : ""
+    hrng = Math.tanh(rng);
+   
+    ft.title = (1-hrng)/(1+hrng) + ' < t < ' + (1+hrng)/(1-hrng)
+    ft.style.color = (1-hrng)/(1+hrng) < ft.value & ft.value < (1+hrng)/(1-hrng) ? "" : "red"
+
+}
+
+N = 7.
+mu = -1
+
+function update() {
+   if (_y == "x") fy.value = fx.value
+   if (_x == "r") fx.value = parseFloat(fz.value) + 0.25   // root mode
+   if (_y == "r") fy.value = parseFloat(fz.value) - 0.25
+   if (_x == "w") fx.value = parseFloat(ft.value) + 1
+   if (_y == "w") fy.value = parseFloat(ft.value) - 1
+   if (_z == "x") fz.value = fx.value   // x*x
+   let x = parseFloat(fx.value)
+   let y = parseFloat(fy.value)
+   let z = parseFloat(fz.value)
+   let N = parseFloat(fN.value)
+
+   if (mode=='r') {
+      var cond = (x,y,z) => z<0
+   } else {
+      var cond = (x,y,z) => y>0
+   }
+   console.log(mode, mu, cond(x,y,z), cond(0,-1,0),cond(0,0,-1))
+
+   atab(N, mu)
+
+   cordic_fmt(x, y, z, mu, naseq, K(N,mu), cond)
+}
+
+function select_conf(fb, X="", Y="", Z="", T="") {
+   console.log(fb)
+   mu = -1;
+   [mode, _mu, _x, _y , _z] = fb.id.split('')
+   g = document.getElementsByClassName("active")
+   for (let i=g.length; i--;) {
+       g[i].className = g[i].className.replace(" active", "");}
+
+   fb.className += " active"
+   document.getElementById(mode+"____").className += " active"
+   document.getElementById("_"+_mu+"___").className += " active"
+   fx.readOnly = _x != "x"
+   fy.readOnly = _y != "y"
+   fz.readOnly = _z != "z"
+   ft.readOnly = _x != "w"
+   if (_x == "0") fx.value = 0.
+   if (_x == "1") fx.value = 1.
+   if (_y == "0") fy.value = 0.
+   if (_y == "1") fy.value = 1.
+   if (_z == "0") fz.value = 0.
+   if (_z == "1") fz.value = 1.
+   mu = {'l': 0, 'h':-1, 'c':1}[_mu]
+   console.log(mode, mu, _x, _y, _z, _z == "x", fz.value, fx.value)
+   update()
+   set_restyp(X, Y, Z, T)
+}
+
+function set_restyp(X, Y, Z, T="") {
+   rX.innerHTML = X ? " = "+X : ""
+   rY.innerHTML = Y ? " = "+Y : ""
+   rZ.innerHTML = Z ? " = "+Z : ""
+   rT.innerHTML = T ? " = "+T : ""
+}
+
+</script>
+
+
+<h1>CORDIC online demonstrator</h1>
+   <table id="cd_input">
+      <tr>
+         <td><b>Functions</b></td>
+         <td><button id="_l___" style="width:100%" onclick="select_conf(this)">linear (m = 0)</button></td>
+         <td><button id="_c___" style="width:100%" onclick="select_conf(this)">circular (m = 1)</button></td>
+         <td colspan=2><button id="_h___" style="width:100%" onclick="select_conf(this)">hyperbolic (m = -1)</button></td>
+      </tr>
+      <tr class="rotxyz" >
+         <td><button type="button" id="r____" onclick="select_conf(this)">rotation<br>(Z->0)</button></td>
+         <td><button type="button" id="rlxyz" onclick="select_conf(this, 'x','y + x*z', ' 0')">x<br>y + x*z<br>0</button>
+             <button type="button" id="rlx0z" onclick="select_conf(this, 'x','x*z', ' 0')">x<br>x*z<br>0</button>
+             <button type="button" id="rl10z" onclick="select_conf(this, 'x','1*z', ' 0')">1<br>1*z<br>0</button></td>
+         <td><button type="button" id="rcxyz" onclick="select_conf(this, 'x cos z &minus; y sin z', 'x sin z + y cos z', ' 0')">x cos z &minus; y sin z<br>x sin z + y cos z<br>0</button>
+             <button type="button" id="rcx0z" onclick="select_conf(this, 'x cos z', 'x sin z', ' 0')">x cos z<br>x sin z<br>0</button>
+             <button type="button" id="rc10z" onclick="select_conf(this, 'cos z', 'sin z', ' 0')">cos z<br>sin z<br>0</button></td>
+         <td><button type="button" id="rhxyz" onclick="select_conf(this, 'x cosh z + y sinh z', 'x sinh z + y cosh z', ' 0')">x cosh z + y sinh z<br>x sinh z + y cosh z<br>0</button></td>
+         <td><button type="button" id="rhx0z" onclick="select_conf(this, 'x cosh z', 'x sinh z', ' 0')">x cosh z<br>x sinh z<br>0</button>
+             <button type="button" id="rh10z" onclick="select_conf(this, 'cosh z', 'sinh z', ' 0')">cosh z<br>sinh z<br>0</button></td>
+      </tr>
+      <tr>
+         <td></td>
+         <td></td>
+         <td></td>
+         <td></td>
+         <td align="left">
+             <button type="button" id="rhxxz" onclick="select_conf(this, 'x exp z','x exp z',' 0')">x exp z<br>x exp z<br>0</button>
+             <button type="button" id="rh11z" onclick="select_conf(this, 'exp z','exp z',' 0')">exp z<br>exp z<br>0</button></td>
+      </tr>
+      <tr class="vec">
+         <td><button type="button" id="v____" onclick="select_conf(this)">vectoring<br>(Y->0)</button></td>
+         <td><button type="button" id="vlxyz" onclick="select_conf(this, 'x', ' 0', 'z + y/x')">x<br>0<br>z + y/x</button>
+             <button type="button" id="vlxy0" onclick="select_conf(this, 'x', ' 0', 'y/x')">x<br>0<br>y/x</button>
+             <button type="button" id="vlx10" onclick="select_conf(this, '1', ' 0', '1/x')">1<br>0<br>1/x</button></td>
+         <td><button type="button" id="vcxyz" onclick="select_conf(this, 'sqrt(x&sup2; + y&sup2)',' 0','z + atan(y,x)')">r(x,y)<br>0<br>z + atan(y,x)</button>
+             <button type="button" id="vcxy0" onclick="select_conf(this, 'sqrt(x&sup2; + y&sup2)',' 0','atan(y,x)');">r(x,y)<br>0<br>atan(y,x)</button>
+             <button type="button" id="vc1y0" onclick="select_conf(this, 'sqrt(1 + y&sup2)',' 0','atan(y)');">r(1,y)<br>0<br>atan(y)</button></td>
+         <td colspan=2><button type="button" id="vhxyz" onclick="select_conf(this, 'sqrt(x&sup2;&minus;y&sup2;)','0','z + atanh(y,x)');">sqrt(x&sup2;&minus;y&sup2;)<br>0<br>z + atanh(y,x)</button>
+             <button type="button" id="vhxy0" onclick="select_conf(this, 'sqrt(x&sup2;&minus;y&sup2;)','0','atanh(y,x)')">sqrt(x&sup2;&minus;y&sup2;)<br>0<br>atanh(y,x)</button>
+             <button type="button" id="vh1y0" onclick="select_conf(this, 'sqrt(1&minus;y&sup2;)','0','atanh(y)')">sqrt(1&minus;y&sup2;)<br>0<br>atanh(y)</button></td>
+      </tr>
+      <tr class="vec">
+         <td></td>
+         <td></td>
+         <td></td>
+         <td colspan=2><button type="button" id="vhrrz" onclick="select_conf(this, 'sqrt z',' 0','z+atanh(z&minus;0.25,z+0.25)')">sqrt z<br>0<br>z+atanh(z&minus;0.25,z+0.25)</button>
+             <button type="button" id="vhww0" onclick="select_conf(this, '2 sqrt t',' 0','atanh(t&minus;1,t+1) = 1/2 ln t')">2 sqrt t<br>0<br>atanh(t&minus;1,t+1) = 1/2ln t</button></td>
+      </tr>
+   </table>
+
+
+   <table id="funckeys" frame="box">
+     <tr>
+         <td> <input value="sin"     type="button" id="rc10zf" onclick="select_conf(this, '','sin z','')"></td>
+         <td> <input value="sinh"    type="button" id="rh10zf" onclick="select_conf(this, '','sinh z','')"></td>
+         <td> <input value="exp"     type="button" id="rh11zf" onclick="select_conf(this, 'exp z','exp z','')"></td>
+          <td> <input value="+"       type="button" id="rlxy1f" onclick="select_conf(this, '','x + y','')" title="for fun with CORDIC, but of course addition can be done directly"></td>
+         <td> <input value="&minus;" type="button" id="rlxy1f" onclick="select_conf(this, '','y &minus; x',''); fz.value=-1" title="for fun with CORDIC, but of course subtraction can be done directly"></td>
+     </tr>
+     <tr>
+         <td> <input value="cos"     type="button" id="rc10zf" onclick="select_conf(this, 'cos z','','')"></td>
+         <td> <input value="cosh"    type="button" id="rh10zf" onclick="select_conf(this, 'cosh z','','')"></td>
+         <td> <input value="ln"      type="button" id="vhww0f" onclick="select_conf(this, '','','','ln(t)');"></td>
+         <td> <input value="*"       type="button" id="rlx0zf" onclick="select_conf(this, '','x * z','')"></td>
+         <td> <input value="/"       type="button" id="vlxy0f" onclick="select_conf(this, '','','y / x')"></td>
+     </tr>
+     <tr>
+         <td> <input value="atan"    type="button" id="vc1y0f" onclick="select_conf(this, '','','atan y')"></td>
+         <td> <input value="atanh"   type="button" id="vh1y0f" onclick="select_conf(this, '','','atanh y')"></td>
+         <td> <input value="sqrt"    type="button" id="vhrrzf" onclick="select_conf(this, 'sqrt z','','')"></td>
+         <td> <input value="x&sup2;" type="button" id="rlx0xf" onclick="select_conf(this, '','x&sup2;','')"></td>
+         <td> <input value="1/x"     type="button" id="vlx10f" onclick="select_conf(this, '','','1 / x')"></td>
+     </tr>
+     <tr>
+         <td> <input value="acot"    type="button" id="vcx10f" onclick="select_conf(this, '','','acot x')"></td>
+         <td> <input value="acoth"   type="button" id="vhx10f" onclick="select_conf(this, '','','acoth x')"></td>
+     </tr>
+   <table>
+
+   
+
+   <table id="cordic_block" style="border-collapse:collapse;">
+     <tr>
+         <td> </td>
+         <td> </td>
+         <td align="center"> N <input type="number" id="N" value=15 min=0 max=32 style="width: 2.5em; text-align:right"></td>
+         <td> </td>
+         <td> </td>
+     </tr>
+     <tr>
+         <td> x </td>
+         <td> <input type="text" id="x" value=1.> &mdash;</td>
+         <th rowspan=3 style="border: 1px solid black; background-color:#6C6;" align="center"> CORDIC </th>
+         <td>&mdash; X </td>
+         <td> <input type="text" id="X" readonly></td>
+         <td id="rX"> </td>
+     </tr>
+     <tr>
+         <td> y</td>
+         <td> <input type="text" id="y" value=0.> &mdash;</td>
+         <td>&mdash; Y</td>
+         <td> <input type="text" id="Y" readonly></td>
+         <td id="rY"> </td>
+     </tr>
+     <tr>
+         <td> z</td>
+         <td> <input type="text" id="z"> &mdash;</td>
+         <td>&mdash; Z</td>
+         <td> <input type="text" id="Z" readonly></td>
+         <td id="rZ"> </td>
+     </tr>
+     <tr>
+         <td> t</td>
+         <td> <input type="text" id="w" value=2.7182818285></td>
+         <td> </td>
+         <td id="lZZ" align="right"> 2Z</td>
+         <td> <input type="text" id="ZZ" readonly> </td>
+         <td id="rT"> </td>
+     </tr>
+     
+   </table>  
+
+   <table id="cordic_table" margin>
+     <tr>
+         <th> n </th>
+         <th> x </th>
+         <th> y </th>
+         <th> z </th>
+         <th> s </th>
+     </tr>
+     <tr id="iter" >
+     </tr>
+     <tr>
+         <th> N </th>
+         <th> X </th>
+         <th> Y </th>
+         <th> Z </th>
+     </tr>
+   </table>
+
+
+
+<p>
+<h4>other online demos</h3>
+<a href="https://raw.githack.com/AxelRieben/CORDIC-Algorithm/master/AN_Labo6_RiebenAxel.html">CORDIC-Algorithm</a> <a href="https://github.com/AxelRieben/CORDIC-Algorithm/blob/master/AN_Labo6_RiebenAxel.js">@github</a><br>
+<a href="https://g2384.github.io/work/cordic.html">Online Cordic Calculator (Javascript)</a><br>
+<a href="https://programmer209.wordpress.com/2011/09/18/how-to-implement-cordic">https://programmer209.wordpress.com/2011/09/18/how-to-implement-cordic/</a><br>
+
+<h4>further reading</h3>
+<a href="http://digdok.bib.thm.de/volltexte/2009/4148/pdf/CORDIC_Algorithmus.pdf">CORDIC-Algorithmus zur Auswertung elementarer Funktionen in Hardware [pdf]</a><br>
+<a href="https://www.st.com/content/ccc/resource/technical/document/application_note/group1/50/31/98/a8/b5/da/4e/a4/DM00614795/files/DM00614795.pdf/jcr:content/translations/en.DM00614795.pdf">Getting started with the CORDIC accelerator using STM32CubeG4 MCU Package</a><br>
+<a href="http://www.quarterinchbit.com/files/Cockrum_Fall_2008_Final_Paper.pdf">Implementation of the CORDIC Algorithmin a Digital Down-ConverterChris K Cockrum</a><br>
+<a href="https://www.ijser.org/onlineResearchPaperViewer.aspx?A-Review-of-CORDIC-Algorithms-and-Architectures-with-Applications-for-Efficient-Designing.pdf">A-Review-of-CORDIC-Algorithms-and-Architectures-with-Applications-for-Efficient-Designing.pdf</a><br>
+<a href="https://www.amd.e-technik.uni-rostock.de/veroeff/elektronik93.pdf">elektronik93.pdf nice tables</a><br>
+<a href="https://en.wikibooks.org/wiki/Digital_Circuits/CORDIC">https://en.wikibooks.org/wiki/Digital_Circuits/CORDIC</a><br>
+<a href="http://cordic-bibliography.blogspot.com/p/c-codes-for-cordic.html">c-codes-for-cordic</a><br>
+<a href="http://www.andraka.com/files/crdcsrvy.pdf">http://www.andraka.com/files/crdcsrvy.pdf arcsin</a><br>
+
+<a href="https://www.quinapalus.com/efunc.html">quinapalus ln</a><br>
+<a href="https://people.sc.fsu.edu/~jburkardt/py_src/cordic/cordic.html"></a><br>
+</p>
+
+<script>
+var fx = document.getElementById("x")
+var fy = document.getElementById("y")
+var fz = document.getElementById("z")
+var ft = document.getElementById("w")
+var fN = document.getElementById("N")
+var rX = document.getElementById("rX")
+var rY = document.getElementById("rY")
+var rZ = document.getElementById("rZ")
+var rT = document.getElementById("rT")
+
+
+for (let f of [fx, fy, fz, ft, fN]) {
+    f.addEventListener("input", update)
+}
+
+fz.value = Math.PI/4
+select_conf(document.getElementById('rc10z'), 'cos z', 'sin z', ' 0')
+
+</script>
+
+</body>
+</html> 
+
