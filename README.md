@@ -12,3 +12,6 @@ Algorithms are available for
 * [gnuplot](gnuplot)
 * [xlsx](xlsx)
 * [c](python/lib)
+
+An online demo of normal CORDIC is here
+https://raw.githack.com/mzechmeister/ke/master/cordic/js/cordic.html
