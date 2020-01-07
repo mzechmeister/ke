@@ -32,10 +32,10 @@ class ieee(float):
    >>> x.frexp
    (0.574999988079071, 5L)
 
+   # (Not exact because 32 bit vs. 64 bit.)
 
    Notes
    -----
-    # (Not exact because 32 bit vs. 64 bit)
    x = SEEEEEEEEMMMMMMMMMMMMMMMMMMMMMMM
      = s * m * 2**e
 
