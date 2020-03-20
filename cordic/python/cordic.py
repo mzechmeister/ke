@@ -40,7 +40,7 @@ Kh = [1] + cumprod([(1-4**-i)**-0.5 for i in Sh[:-1]])
 K = Kl, Kc, Kcd, Kh
 
 
-def rot(x, y, z, m=1, n=29, func=lambda x,y,z: z<0, verbose=False):
+def rot(x, y, z, m=1, n=29, func=lambda x,y,z: z>0, verbose=False):
    '''
    Pure CORDIC core (floating point).
 
@@ -72,7 +72,7 @@ def rot(x, y, z, m=1, n=29, func=lambda x,y,z: z<0, verbose=False):
    -------
    # cos(pi/4)
    >>> rot(1., 0., math.pi/4), math.cos(math.pi/4)
-   ((0.7071067827646602, 0.7071067796084353, 2.231788178302477e-09), 0.7071067811865476)
+   ((0.7071067796084353, 0.7071067827646602, -2.231788178302477e-09), 0.7071067811865476)
 
    '''
    mm = 1 if m==2 else m
@@ -81,9 +81,9 @@ def rot(x, y, z, m=1, n=29, func=lambda x,y,z: z<0, verbose=False):
       if verbose:
          print("%2d %2d %9d x=%11.8f y=%11.8f  K=%10.8f ai=%11.8f zi=%11.8f" %
                    (i, j, 1<<j, x, y, K[m][i], sgn*ai, z), K[m][i]*x, K[m][i]*y)
-      z += sgn * ai
-      x, y = x + mm*sgn*y/(1<<j),\
-             y -    sgn*x/(1<<j)
+      z -= sgn * ai
+      x, y = x - mm*sgn*y/(1<<j),\
+             y +    sgn*x/(1<<j)
    return K[m][n]*x, K[m][n]*y, z
 
 
@@ -94,10 +94,10 @@ def rect(r, x, **kwargs):
    Example
    -------
    >>> rect(2**0.5, math.pi/4)
-   (1.0000000022317888, 0.9999999977682124)
+   (0.9999999977682124, 1.0000000022317888)
 
    '''
-   x, y, _ = rot(r, 0., x, func=lambda x,y,z: z<0, **kwargs)
+   x, y, _ = rot(r, 0., x, func=lambda x,y,z: z>0, **kwargs)
    return x, y
 
 def recth(r, x, **kwargs):
@@ -105,7 +105,7 @@ def recth(r, x, **kwargs):
    Example
    -------
    '''
-   x, y, _ = rot(r, 0., x, m=-1, func=lambda x,y,z: z<0, **kwargs)
+   x, y, _ = rot(r, 0., x, m=-1, func=lambda x,y,z: z>0, **kwargs)
    return x, y
 
 def polar(x, y, **kwargs):
@@ -114,22 +114,21 @@ def polar(x, y, **kwargs):
    -------
    # cos(pi/4)
    >>> polar(*cossin(math.pi/4)), math.pi/4
-   ((1.0000000000000004, 0.7853981581786557), 0.7853981633974483)
+   ((1.0000000000000004, 0.7853981686162409), 0.7853981633974483)
 
    '''
-   r, _, z = rot(x, y, 0., func=lambda x,y,z: y>0, **kwargs)
+   r, _, z = rot(x, y, 0., func=lambda x,y,z: y<0, **kwargs)
    return r, z
 
 def polarh(x, y, **kwargs):
    '''
    Example
    -------
-   # cos(pi/4)
-   >>> polar(*cossin(math.pi/4)), math.pi/4
-   ((1.0000000000000004, 0.7853981581786557), 0.7853981633974483)
+   >>> polarh(*coshsinh(1))
+   (1.000000000000001, 0.9999999925533603)
 
    '''
-   r, _, z = rot(x, y, 0., m=-1, func=lambda x,y,z: y>0, **kwargs)
+   r, _, z = rot(x, y, 0., m=-1, func=lambda x,y,z: y<0, **kwargs)
    return r, z
 
 
@@ -139,9 +138,9 @@ def cossin(x, **kwargs):
    -------
    # cos(pi/4)
    >>> cossin(math.pi/4), math.cos(math.pi/4)
-   ((0.7071067827646602, 0.7071067796084353), 0.7071067811865476)
+   ((0.7071067796084353, 0.7071067827646602), 0.7071067811865476)
 
-   # cos(pi/4)
+   # cos(pi/8)
    >>> cossin(-math.pi/8), math.cos(-math.pi/8)
    ((0.9238795333214502, -0.38268343040918296), 0.9238795325112867)
 
@@ -154,7 +153,7 @@ def coshsinh(x, **kwargs):
    Example
    -------
    >>> coshsinh(0)
-   (1.0000000000000004, -4.121908780714506e-09)
+   (1.0000000000000004, 4.121908780714506e-09)
 
    >>> coshsinh(1), (math.cosh(1), math.sinh(1))
    ((1.543080626063944, 1.1752011821530355), (1.5430806348152437, 1.1752011936438014))
@@ -178,7 +177,7 @@ def sinh(x, **kwargs):
 
 def aexp(x, a=1, **kwargs):
    ''' a*exp(x) '''
-   expx, _, _ = rot(a, a, x, m=-1, func=lambda x,y,z: z<0, **kwargs)
+   expx, _, _ = rot(a, a, x, m=-1, func=lambda x,y,z: z>0, **kwargs)
    return expx
 
 def exp(x, **kwargs):
@@ -209,9 +208,8 @@ def atan(y, **kwargs):
    '''
    Example
    -------
-   # cos(pi/4)
    >>> atan(1), math.pi/4
-   (0.7853981656292363, 0.7853981633974483)
+   (0.7853981611656603, 0.7853981633974483)
    '''
    _, z = polar(1., y, **kwargs)
    return z
@@ -220,9 +218,8 @@ def atanh(y, **kwargs):
    '''
    Example
    -------
-   # cos(pi/4)
-   >>> atan(1), math.pi/4
-   (0.7853981656292363, 0.7853981633974483)
+   >>> atanh((2-1/2)/(2+1/2)), math.log(2)
+   (0.693147184977926, 0.6931471805599453)
    '''
    _, z = polarh(1., y, **kwargs)
    return z
@@ -238,11 +235,11 @@ def asin(arg, n=29, **kwargs):
    (0.5235987769420017, 0.5235987755982988)
 
    '''
-   _, _, z = rot(Kc[n], 0., 0., n=n, func=lambda x,y,z: y>arg, **kwargs)
+   _, _, z = rot(Kc[n], 0., 0., n=n, func=lambda x,y,z: y<arg, **kwargs)
    return -z
 
 def acos(arg, n=29, **kwargs):
-   _, _, z = rot(Kc[n], 0., 0., n=n, func=lambda x,y,z: x<arg, **kwargs)
+   _, _, z = rot(Kc[n], 0., 0., n=n, func=lambda x,y,z: x>arg, **kwargs)
    return -z
 
 def asinh(arg, n=29):
@@ -256,7 +253,7 @@ def asinh(arg, n=29):
    (0.5235987769420017, 0.5235987755982988)
 
    '''
-   _, _, z = rot(Kh[n], 0., 0., m=-1, func=lambda x,y,z: y>arg, n=n)
+   _, _, z = rot(Kh[n], 0., 0., m=-1, func=lambda x,y,z: y<arg, n=n)
    return -z
 
 
@@ -317,11 +314,11 @@ def dasin(arg, n=32, **kwargs):
    >>> asin(0.5), math.pi/6
    (0.5235987769420017, 0.5235987755982988)
    '''
-   _, _, z = rot(Kcd[n], 0., 0., m=2, func=lambda x,y,z: y>arg, n=n, **kwargs)
+   _, _, z = rot(Kcd[n], 0., 0., m=2, func=lambda x,y,z: y<arg, n=n, **kwargs)
    return -z
 
 def dacos(arg, n=29, **kwargs):
-   _, _, z = rot(Kcd[n], 0., 0., m=2, func=lambda x,y,z: x<arg, n=n, **kwargs)
+   _, _, z = rot(Kcd[n], 0., 0., m=2, func=lambda x,y,z: x>arg, n=n, **kwargs)
    return -z
 
 
