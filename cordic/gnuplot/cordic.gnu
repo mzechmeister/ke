@@ -9,30 +9,23 @@
 
 if (!exists("N")) N = 32
 
-# shift sequence
-array kl[N]
-array kc[N]
-array kh[N]
 
-# base angles
-array al[N]
-array ac[N]
-array ah[N]
+array k_[3*N]   # shift sequence
+array a_[3*N]   # base angles
 
 # scale correction
-Kl = 1
 Kc = 1
 Kh = 1
 
 do for [i=1:N] {
-   kl[i] = i - 1
-   kc[i] = i - 1
-   kh[i] = i - (i>4) - (i>14)
-   al[i] = 2**-kc[i]
-   ac[i] = atan(2**-kc[i])
-   ah[i] = atanh(2**-kh[i])
-   Kc = Kc * (1+4**-kc[i])**-0.5
-   Kh = Kh * (1-4**-kh[i])**-0.5
+   k_[i]     = k = i - (i>4) - (i>14)
+   a_[i]     = atanh(2**-k)
+   Kh = Kh * (1-4**-k)**-0.5
+   k_[i+N]   = k = i - 1
+   a_[i+N]   = 2**-k
+   k_[i+N+N] = k = i - 1
+   a_[i+N+N] = atan(2**-k)
+   Kc = Kc * (1+4**-k)**-0.5
 }
 
 # Parameter: v - vectoring
@@ -40,15 +33,14 @@ cordic(x, y, t, m, v) = (\
     X = x,\
     Y = y,\
     T = t,\
-    sum[i=1:N](\
-       k = m==1? kc[i] : m? kh[i] : kl[i],\
-       a = m==1? ac[i] : m? ah[i] : al[i],\
+    sum[i=1+N*m+N:N+N*m+N](\
+       k = k_[i],\
        u = v? -Y: T,\
        s = u<0 ? -1. : 1.,\
        u = X,\
        X = X - m*s*Y/2.**k,\
        Y = Y +   s*u/2.**k,\
-       T = T - s*a),\
+       T = T - s*a_[i]),\
     k\
 )
 
