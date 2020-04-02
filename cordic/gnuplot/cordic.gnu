@@ -142,3 +142,31 @@ SQRT(x)      = (E=floor(log(x)/log(2)), _sqrt(x/2**E)*2**(E/2.))   # Walther (19
 SQRT(x)      = (VEC_h(x+0.25, x-0.25, 0), Kh*X)
 
 
+# Operations derived from two CORDIC operations
+
+_asin(x)   = _atan2(x, _cath(1, x))     # atan(x/sqrt(1-x^2))
+_acos(x)   = _atan2(_cath(1, x), x)     # atan(sqrt(1-x^2)/x)
+_tan(x)    = _div((rot_c(Kc, 0, x), Y), X)
+_cot(x)    = _div((rot_c(Kc, 0, x), X), Y)
+_asinh(x)  = _atanh2(x, _hypot(1, x))   # atanh(x/sqrt(x^2+1)) = ln(x+sqrt(x^2+1))
+_acosh(x)  = _atanh2(_cath(x,1), x)     # atanh(sqrt(x^2-1)/x) = ln(x+sqrt(x^2-1))
+_tanh(x)   = _div((rot_h(1, 0, x), Y), X)
+_coth(x)   = _div((rot_h(1, 0, x), X), Y)
+
+ASIN(x)    = ATAN2(x, CATH(1, x))
+ACOS(x)    = ATAN2(CATH(1, x), x)
+TAN(x)     = DIV((ROT_c(Kc, 0, x), Y), X)
+COT(x)     = DIV((ROT_c(Kc, 0, x), X), Y)
+ASINH(x)   = ATANH2(x, HYPOT(1,x))
+ACOSH(x)   = ATANH2(CATH(x, 1), x)
+TANH(x)    = DIV((ROT_h(1, 0, x), Y), X)
+COTH(x)    = DIV((ROT_h(1, 0, x), X), Y)
+
+
+# Operations derived from three CORDIC operations
+
+POW(x, y)  = EXP(MUL(LN(x),y))
+ROOT(x, y) = EXP(DIV(LN(x),y))
+
+
+
