@@ -78,7 +78,7 @@ _atanh2(y,x)  = (vec_h(x, y, 0), T)
 _atanh(x)     = (vec_h(1, x, 0), T)
 _acoth(x)     = (vec_h(x, 1, 0), T)
 _ln(x)        = (vec_h(x+1, x-1, 0), 2*T)
-_sqrt(x)      = (vec_h(x+0.25, x-0.25, 0), Kh*X)
+_sqrt(x)      = (vec_h(x+Kh**2/4, x-Kh**2/4, 0), X)
 
 
 # With range extension
@@ -131,8 +131,7 @@ LN(x)        = (E=floor(log(x)/log(2)), M=x/2**E, vec_h(M+1, M-1, 0), 2*T+E*log(
 LN(x)        = (E=floor(log(x)/log(2)), _ln(x/2**E)+E*log(2))   # Walther (1971)
 LN(x)        = (VEC_h(x+1, x-1, 0), 2*T)
 SQRT(x)      = (E=floor(log(x)/log(2)), _sqrt(x/2**E)*2**(E/2.))   # Walther (1971)
-SQRT(x)      = (VEC_h(x+0.25, x-0.25, 0), Kh*X)
-
+SQRT(x)      = (VEC_h(x+Kh**2/4, x-Kh**2/4, 0), X)
 
 # Operations derived from two CORDIC operations
 
