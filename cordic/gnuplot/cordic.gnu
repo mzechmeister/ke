@@ -1,7 +1,7 @@
 # CORDIC floating point with gnuplot
 #
 # author: Mathias Zechmeister
-# version: 2020-04-02
+# version: 2020-04-03
 #
 # This code emulates the functionality of CORDIC.
 # It defines several elementary function without and with
@@ -10,8 +10,8 @@
 if (!exists("N")) N = 32
 
 
-array k_[3*N]   # shift sequence
-array a_[3*N]   # base angles
+array k_[N*3]   # shift sequence
+array a_[N*3]   # base angles
 
 # scale correction
 Kc = 1
@@ -20,12 +20,12 @@ Kh = 1
 do for [i=1:N] {
    k_[i]     = k = i - (i>4) - (i>14)
    a_[i]     = atanh(2**-k)
-   Kh = Kh * (1-4**-k)**-0.5
+   Kh        = Kh / sqrt(1-4**-k)
    k_[i+N]   = k = i - 1
    a_[i+N]   = 2**-k
    k_[i+N+N] = k = i - 1
    a_[i+N+N] = atan(2**-k)
-   Kc = Kc * (1+4**-k)**-0.5
+   Kc        = Kc / sqrt(1+4**-k)
 }
 
 # Parameter: v - vectoring
@@ -35,8 +35,7 @@ cordic(x, y, t, m, v) = (\
     T = t,\
     sum[i=1+N*m+N:N+N*m+N](\
        k = k_[i],\
-       u = v? -Y: T,\
-       s = u<0 ? -1. : 1.,\
+       s = (v?-Y:T) < 0 ? -1. : 1.,\
        u = X,\
        X = X - m*s*Y/2.**k,\
        Y = Y +   s*u/2.**k,\
