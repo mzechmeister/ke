@@ -85,8 +85,8 @@ ROT_l(x, y, t) = (E=floor(abs(t)/log(2)), rot_l(x*2**E, y, t/2.**E))
 
 ROT_c(x, y, t) = (m=floor(t/pi*2), Q=(m%4+4)%4, rot_c(Q==0?x:Q==1?-y:Q==2?-x:y, Q==0?y:Q==1?x:Q==2?-y:-x, t-pi/2*m))  # Walther (1971) four quadrants
 ROT_c(x, y, t) = (m=floor(t/pi+0.5), Q=m&1, rot_c(Q?-x:x, Q?-y:y, t-pi*m))   # two branches
-ROT_c(x, y, t) = (m=floor(t/(2*pi)+0.5), Q=t-2*pi*m<0, rot_c(Q?y:-y, Q?-x:x, t-2*pi*m+(Q?pi/2:-pi/2)))   # two branches
-
+ROT_c(x, y, t) = (T=t-2*pi*floor(t/(2*pi))-pi, s=T<0?-1:1, rot_c(s*y, -s*x, T-s*pi/2))   # two branches
+ 
 ROT_h(x, y, t) = (E=floor(t/log(2)), D=t-E*log(2), rot_h(x*(2**E+2**-E)/2 + y*(2**E-2**-E)/2, x*(2**E-2**-E)/2 + y*(2**E+2**-E)/2, D))
 ROT_h(x, y, t) = (E=floor(t/log(2)), D=t-E*log(2), rot_h(((x+y)*2**E + (x-y)*2**-E)/2, ((x+y)*2**E - (x-y)*2**-E)/2, D))
 ROT_h(x, y, t) = (E=floor(t/log(2)), D=t-E*log(2), u=(x+y)*2**E/2, v=(x-y)*2**-E/2, rot_h(u+v, u-v, D))
