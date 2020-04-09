@@ -1,14 +1,14 @@
 # CORDIC floating point with gnuplot
 #
 # author: Mathias Zechmeister
-# version: 2020-04-03
+# version: 2020-04-09
 #
 # This code emulates the functionality of CORDIC.
 # It defines several elementary function without and with
 # range extension.
 
-if (!exists("N")) N = 32
-
+if (!exists("_N")) _N = 32
+N = _N
 
 array k_[N*3]   # shift sequence
 array a_[N*3]   # base angles
@@ -33,13 +33,13 @@ cordic(x, y, t, m, v) = (\
     X = x,\
     Y = y,\
     T = t,\
-    sum[i=1+N*m+N:N+N*m+N](\
+    sum[i=1+_N*m+_N:N+_N*m+_N](\
        k = k_[i],\
        s = (v?-Y:T) < 0 ? -1. : 1.,\
        u = X,\
        X = X - m*s*Y/2.**k,\
        Y = Y +   s*u/2.**k,\
-       T = T - s*a_[i]),\
+       T = T -   s*a_[i]),\
     k\
 )
 
