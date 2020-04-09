@@ -26,6 +26,11 @@ plot _tan(x), TAN(x), tan(x), _cot(x), COT(x), 1/tan(x)
 plot _asinh(x), ASINH(x), asinh(x), _acosh(x), ACOSH(x), acosh(x)
 
 set par
+# Convergence to the unit circle
 plot for [N=1:6] COS(t),SIN(t)
+
+# Parametric comparison of modes and convergence ranges
+N=32
+plot [-pi:pi][-2:4] COS(t), SIN(t), _cos(t),_sin(t), COSH(t), SINH(t), _cosh(t), _sinh(t), 1,MUL(1,t), 1,_mul(1,t)
 
 
