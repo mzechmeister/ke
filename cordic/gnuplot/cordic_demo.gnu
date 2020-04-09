@@ -20,4 +20,12 @@ plot [0.12:2] _ln(x)-log(x)
 plot [2.5:] _div(1.5, x), 1.5/x
 plot [-2:2] _sqr(x) - x**2
 
+plot _asin(x), ASIN(x), asin(x), _acos(x), ACOS(x), acos(x)
+plot _tan(x), TAN(x), tan(x), _cot(x), COT(x), 1/tan(x)
+
+plot _asinh(x), ASINH(x), asinh(x), _acosh(x), ACOSH(x), acosh(x)
+
+set par
+plot for [N=1:6] COS(t),SIN(t)
+
 
