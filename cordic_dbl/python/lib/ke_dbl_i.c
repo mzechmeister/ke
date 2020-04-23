@@ -49,7 +49,7 @@ double i_Ecs(double M, double e, double *E, double *ecosE, double *esinE, int N)
     // simple conversion dbl-fx + bit shift
     // s^s+, y before s
     // 19.2 ms
-    long long x=KR*e, y=0, t=M*R, Y;
+    long long x=KR*e, y=0, t=remainder(M,2*M_PI)*R, Y;
     int k, n, s;
     for (n=0; n<N; n++){
         k = k_n[n];
