@@ -16,7 +16,7 @@ The python module [ke_cordic.py](ke_cordic.py) hosts the demonstration codes fro
 
 ### Installation python
 ```bash
-svn export https://github.com/mzechmeister/ke/trunk/python ke_cordic_like
+svn export https://github.com/mzechmeister/ke/trunk/cordic_like/python ke_cordic_like
 cd ke_cordic_like
 python setup.py develop --user
 ```
