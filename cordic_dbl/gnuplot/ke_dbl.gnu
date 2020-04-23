@@ -70,6 +70,9 @@ f64_E(M, e) = (En=E0(M), X=K*e, Y=0.,\
        Y = Y + sgn*u/2**k),\
    En)
 
+
+# single rotation version (just to demo non-converging!)
+
 f64_E_sgl(M, e) = (En=E0(M), X=K_sgl*e, Y=0.,\
    sum[ii=1:N] (\
        k = ii-1,\
@@ -80,9 +83,13 @@ f64_E_sgl(M, e) = (En=E0(M), X=K_sgl*e, Y=0.,\
        Y = Y + sgn*u/2**k),\
    En)
 
+
 # emulated fix point version
 
-i32_E(M, e) = (T=fx(M-2*pi*floor(M/(2*pi)+0.5)), X=fx(K32*e), Y=0,\
+i32_E(M, e) = (
+   T = fx(M-2*pi*floor(M/(2*pi)+0.5)),\
+   X = fx(K32*e),\
+   Y = 0,\
    sum[ii=1:Nn32] (\
        k = kseq32[ii],\
        s = sar(Y+T, 31),\
@@ -90,5 +97,5 @@ i32_E(M, e) = (T=fx(M-2*pi*floor(M/(2*pi)+0.5)), X=fx(K32*e), Y=0,\
        u = X,\
        X = X - (s ^ s+sar(Y,k)),\
        Y = Y + (s ^ s+sar(u,k)) ),\
-   M+fp(Y))
+   M + fp(Y))
 
