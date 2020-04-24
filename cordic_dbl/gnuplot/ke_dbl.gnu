@@ -86,7 +86,7 @@ f64_E_sgl(M, e) = (En=E0(M), X=K_sgl*e, Y=0.,\
 
 # emulated fix point version
 
-i32_E(M, e) = (
+i32_E(M, e) = (\
    T = fx(M-2*pi*floor(M/(2*pi)+0.5)),\
    X = fx(K32*e),\
    Y = 0,\
