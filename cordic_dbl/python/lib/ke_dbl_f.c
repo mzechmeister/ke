@@ -82,11 +82,9 @@ int main(int argc, char *argv[]) {
     e = atof(argv[2]);
     N = atoi(argv[3]);
 
-    double u, hh, M=x-e*sin(x);
+    double hh, M=x-e*sin(x);
     printf("E:               %.20g\n", x);
     printf("i64_Ecs          %.20g\n", f_Ecs(M, e, &hh, &hh, &hh, N));
-
-    printf("v_Ecs       %.20g\n", u);
 
     return 0;
 }
