@@ -153,8 +153,8 @@ def i64_Hcs(M, e):
     for a,k in i64_ahk:
         s = -t-y >> 63
         t -= s ^ s + a
-        x, y = x + ((s^s+y)>>k),\
-               y + ((s^s+x)>>k)
+        x, y = x + (s^s+(y>>k)),\
+               y + (s^s+(x>>k))
     return y/R-M, x/R, y/R
 
 #gplot(M, H, [Hcs(Mi, e)[0] for Mi in M], [i64_Hcs(Mi, e)[0] for Mi in M], [Hcs_z(Mi, e)[0] for Mi in M], 'w l, "" us 1:3 w l t "Hcs", "" us 1:4 w l t "Hcs_z", "" us 1:($3-$2) axis x1y2, "" us 1:($4-$2) axis x1y2')
