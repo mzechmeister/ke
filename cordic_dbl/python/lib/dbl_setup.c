@@ -14,7 +14,7 @@ void make_tables(int kmax, int B){
     double sec2a, K=1., dR=1./R;
 
     for (k=0, n=0; k<=kmax; k++){
-        i64_a[k] = atan(1./(1LL<<k)) * R;
+        i64_a[k] = round(atan(1./(1LL<<k)) * R);
         k_n[n++] = k;
         sec2a = 1 + 1./(1LL<<k)/(1LL<<k);
         if (sec2a>1) {
