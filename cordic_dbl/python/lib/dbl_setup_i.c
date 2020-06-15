@@ -3,7 +3,7 @@
 #include <math.h>
 
 /*
-gcc dbl_setup.c -lm -O2 -o dbl_setup  &&  ./dbl_setup 61 61
+gcc dbl_setup_i.c -lm -O2 -o dbl_setup_i  &&  ./dbl_setup_i 61 61
 */
 
 void make_tables(int kmax, int B){
