@@ -1,20 +1,19 @@
 #! /usr/bin/python3
 from math import atan, tau
 
-kmax = 55  # largest shift value
+kmax = 53  # largest shift value
+R = 1 << 61
 
 ak = []    # atan lookup table
 K = 1      # scale correction factor
-for k in range(kmax):
+for k in range(kmax+1):
     ak += [(atan(2**-k), k)]
-    sec2a = 1 + 4**-k
-    if sec2a > 1:
-        K /= sec2a
+    if 2*k <= kmax:
+        K /= 1 + 4**-k
         ak += ak[-1:]
 
-R = 1 << 61
-i64_K = int(K*R)
-i64_ak = [(int(a*R), k) for a,k in ak]
+KR = K * R
+i64_ak = [(round(a*R), k) for a,k in ak]
 
 def i64_Ecs(M, e):
     """
@@ -31,12 +30,12 @@ def i64_Ecs(M, e):
 
     Example:
         >>> i64_Ecs(2-sin(2), 1)
-        (2.0, -0.4161468365471425, 0.9092974268256817)
+        (2.0, -0.41614683654714246, 0.9092974268256817)
 
     """
     t = M - tau*round(M/tau)
-    t = int(t * R)
-    x, y = int(i64_K*e), 0
+    t = round(t * R)
+    x, y = round(KR*e), 0
     for a,k in i64_ak:
         s = t+y >> 63
         t -= s ^ s + a
@@ -63,7 +62,7 @@ def Ecs(M, e):
     Example
     -------
     >>> Ecs(2-sin(2), 1)
-    (2.0, -0.41614683654714213, 0.9092974268256817)
+    (2.0, -0.4161468365471421, 0.9092974268256817)
 
     """
     M = M - tau*round(M/tau)
@@ -94,7 +93,7 @@ def Ecs_z(M, e):
 
     Example:
         >>> Ecs_z(2-sin(2), 1)
-        (1.9999999999999998, -0.41614683654714213, 0.9092974268256815)
+        (1.9999999999999998, -0.4161468365471422, 0.9092974268256815)
 
     """
     t = M - tau*round(M/tau)
@@ -110,20 +109,19 @@ def Ecs_z(M, e):
 from math import atanh, frexp, log
 ln2 = log(2)
 
-kmax = 55  # largest shift value
+kmax = 53  # largest shift value
+R = 1 << 61
 
 ahk = []   # atanh lookup table
 Kh = 1     # scale correction factor
-for k in range(1, kmax):
+for k in range(1, kmax+1):
     ahk += [(atanh(2**-k), k)]
-    sech2a = 1 - 4**-k
-    if sech2a < 1:
-        Kh /= sech2a
+    if 2*k <= kmax:
+        Kh /= 1 - 4**-k
         ahk += ahk[-1:]
 
-R = 1 << 61
-i64_Kh = int(Kh * R)
-i64_ahk = [(int(a*R), k) for a,k in ahk]
+KhR = Kh * R
+i64_ahk = [(round(a*R), k) for a,k in ahk]
 
 def i64_Hcs(M, e):
     """
@@ -144,12 +142,12 @@ def i64_Hcs(M, e):
 
     """
     m = max(0, frexp(M/e)[1])
-    eK = int(e * i64_Kh) >> 1
+    eK = round(e * KhR) >> 1
     x = (eK<<m) + (eK>>m)
     y = (eK<<m) - (eK>>m)
     if M < 0: m, y = -m, -y
     t = M + m*ln2
-    t = -int(t * R)
+    t = -round(t * R)
     for a,k in i64_ahk:
         s = -t-y >> 63
         t -= s ^ s + a
