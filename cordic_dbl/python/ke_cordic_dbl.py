@@ -1,11 +1,13 @@
 #! /usr/bin/python3
 from math import atan, tau
+from math import atanh, frexp, log
+ln2 = log(2)
 
-kmax = 53  # largest shift value
-R = 1 << 61
+kmax = 53     # largest shift value
+R = 1 << 61   # binary point
 
-ak = []    # atan lookup table
-K = 1      # scale correction factor
+ak = []       # atan lookup table
+K = 1         # scale correction factor
 for k in range(kmax+1):
     ak += [(atan(2**-k), k)]
     if 2*k <= kmax:
@@ -106,14 +108,8 @@ def Ecs_z(M, e):
     return M+y, x, y
 
 
-from math import atanh, frexp, log
-ln2 = log(2)
-
-kmax = 53  # largest shift value
-R = 1 << 61
-
-ahk = []   # atanh lookup table
-Kh = 1     # scale correction factor
+ahk = []      # atanh lookup table
+Kh = 1        # scale correction factor
 for k in range(1, kmax+1):
     ahk += [(atanh(2**-k), k)]
     if 2*k <= kmax:
