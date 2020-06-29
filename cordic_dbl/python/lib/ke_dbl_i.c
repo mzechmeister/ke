@@ -3,34 +3,32 @@
 #include <math.h>
 
 /*
-gcc ke_dbl_i.c -lm -O2 -fPIC -pie -o ke_dbl_i.so -Wl,-E  &&  ./ke_dbl_i.so 2. 1. 56
+gcc ke_dbl_i.c -lm -O2 -fPIC -pie -o ke_dbl_i.so -Wl,-E  &&  ./ke_dbl_i.so 2. 1. 81
 
 This is the same as ke_dbl, but loop end is N instead of Nmax
 */
 
 #define R (1LL<<61)
 #define dR (1./R)
-#define Nmax 89
+#define Nmax 81
 #define KR 0x1.799b34c7fac93p+59
 
 // atan(2**-k)
 static long long i64_a[Nmax] = {
 0x1921fb54442d1800, 0xed63382b0dda780, 0x7d6dd7e4b203740, 0x3fab7535585edc0,
 0x1ff55bb72cfdea0, 0xffeaaddd4bb128, 0x7ffd556eedca6c, 0x3fffaaab77752e,
-0x1ffff5555bbbb7, 0xffffeaaaaddde, 0x7ffffd55556ef, 0x3fffffaaaaab7,
-0x1ffffff555555, 0xffffffeaaaaa, 0x7ffffffd5555, 0x3fffffffaaaa,
-0x1ffffffff555, 0xffffffffeaa, 0x7ffffffffd5, 0x3fffffffffa,
-0x1ffffffffff, 0xffffffffff, 0x7fffffffff, 0x3fffffffff,
-0x1fffffffff, 0xfffffffff, 0x7ffffffff, 0x400000000,
+0x1ffff5555bbbb7, 0xffffeaaaaddde, 0x7ffffd55556ef, 0x3fffffaaaaab8,
+0x1ffffff555556, 0xffffffeaaaab, 0x7ffffffd5555, 0x3fffffffaaab,
+0x1ffffffff555, 0xffffffffeab, 0x7ffffffffd5, 0x3fffffffffb,
+0x1ffffffffff, 0x10000000000, 0x8000000000, 0x4000000000,
+0x2000000000, 0x1000000000, 0x800000000, 0x400000000,
 0x200000000, 0x100000000, 0x80000000, 0x40000000,
 0x20000000, 0x10000000, 0x8000000, 0x4000000,
 0x2000000, 0x1000000, 0x800000, 0x400000,
 0x200000, 0x100000, 0x80000, 0x40000,
 0x20000, 0x10000, 0x8000, 0x4000,
 0x2000, 0x1000, 0x800, 0x400,
-0x200, 0x100, 0x80, 0x40,
-0x20, 0x10, 0x8, 0x4,
-0x2, 0x1,
+0x200, 0x100, 
 };
 
 // shift values (double iterations for k<27)
@@ -40,7 +38,7 @@ static short k_n[Nmax] = {
 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23,
 24, 24, 25, 25, 26, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-53, 54, 55, 56, 57, 58, 59, 60, 61,
+53, 
 };
 
 
@@ -84,7 +82,7 @@ int main(int argc, char *argv[]) {
     N = atoi(argv[3]);
 
     double hh, M=x-e*sin(x);
-    printf("E:               %.20g\n", x);
+    printf("M:               %.20g\n", x);
     printf("i64_Ecs          %.20g\n", i_Ecs(M, e, &hh, &hh, &hh, N));
 
     return 0;
