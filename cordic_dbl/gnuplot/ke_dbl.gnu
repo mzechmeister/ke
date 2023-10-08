@@ -1,6 +1,10 @@
 # Solving Kepler's equation with CORDIC double iteration
 # by Mathias Zechmeister (2020-04-23)
-# for gnuplot v5.2+
+# for gnuplot v5.2+ (provides array)
+
+if (GPVAL_VERSION >= 5.4) {
+   unset overflow
+}
 
 N = 50
 N32 = 30
@@ -55,7 +59,7 @@ Nn32 = n
 E0(M) = 2 * pi * floor(M/(2*pi)+0.5)
 
 # function to emulate arithmetic right shift, since gnuplot has logical right shift
-sar(x, n) = (_s=-(x>>31), (_s^x) >> n ^ _s)
+sar(x, n) = (_s=-(x<0), (_s^x) >> n ^ _s)
 
 
 # floating point version
